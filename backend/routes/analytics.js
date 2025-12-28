@@ -8,7 +8,7 @@ router.use(authenticateToken);
 // GET /api/analytics/summary - Get high-level stats
 router.get('/summary', async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = parseInt(req.user.id);
     
     // Status distribution
     const statusStats = await runQuery(
