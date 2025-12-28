@@ -9,11 +9,10 @@ import './database.js'; // Initialize database
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
-// Middleware
-const VERCEL_URL = 'https://todo-app-production-six.vercel.app';
+// Middleware (Permissive for production trial)
 app.use(cors({
-  origin: [VERCEL_URL, 'http://localhost:5173'], // Explicit origins for token safety
+  origin: true, 
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
