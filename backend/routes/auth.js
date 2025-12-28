@@ -23,10 +23,10 @@ router.post('/register',
     }
 
     try {
-      const { email, password, name } = req.body;
+      const normalizedEmail = email.toLowerCase();
 
       // Check if user already exists
-      const existingUsers = await runQuery('SELECT id FROM users WHERE email = $1', [email]);
+      const existingUsers = await runQuery('SELECT id FROM users WHERE email = $1', [normalizedEmail]);
       if (existingUsers.length > 0) {
         return res.status(400).json({ error: 'User already exists with this email' });
       }
@@ -41,7 +41,7 @@ router.post('/register',
         ? 'INSERT INTO users (email, password_hash, name, created_at) VALUES ($1, $2, $3, $4) RETURNING id'
         : 'INSERT INTO users (email, password_hash, name, created_at) VALUES (?, ?, ?, ?)';
       
-      const result = await runExec(sql, [email, passwordHash, name || null, now]);
+      const result = await runExec(sql, [normalizedEmail, passwordHash, name || null, now]);
       const userId = parseInt(result.id);
 
       // Generate JWT
@@ -81,10 +81,12 @@ router.post('/login',
 
     try {
       const { email, password } = req.body;
+      const normalizedEmail = email.toLowerCase();
 
       // Find user
-      const users = await runQuery('SELECT * FROM users WHERE email = $1', [email]);
+      const users = await runQuery('SELECT * FROM users WHERE email = $1', [normalizedEmail]);
       if (users.length === 0) {
+        console.log(`Login Failed: User not found (${normalizedEmail})`);
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
