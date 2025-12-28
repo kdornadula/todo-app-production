@@ -123,16 +123,17 @@ router.post('/login',
 // GET /api/auth/me - Get current user (protected route)
 router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const users = await runQuery('SELECT id, email, name, created_at FROM users WHERE id = $1', [req.user.id]);
+    const userId = parseInt(req.user.id);
+    const users = await runQuery('SELECT id, email, name, created_at FROM users WHERE id = $1', [userId]);
     
     if (users.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'User found in token, but not in database' });
     }
 
     res.json(users[0]);
   } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({ error: 'Failed to fetch user' });
+    console.error('Get Current User Error:', error.stack);
+    res.status(500).json({ error: 'Failed to fetch user profile', detail: error.message });
   }
 });
 
