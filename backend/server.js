@@ -18,7 +18,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-// Health check endpoint
+// Health check and root endpoints
+app.get('/api', (req, res) => {
+  res.json({ message: 'Welcome to the TODO API Production Server!', version: '1.0.0' });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'TODO API server is running' });
 });
