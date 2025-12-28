@@ -133,7 +133,7 @@ router.post('/', async (req, res) => {
     const isPostgres = !!process.env.DATABASE_URL;
     const sql = isPostgres
       ? `INSERT INTO tasks (title, description, category, due_date, priority, status, user_id, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, 'active', $6, $7, $8) RETURNING id`
+         VALUES ($1, $2, $3, $4, $5, 'active', $6, $7, $8) RETURNING *`
       : `INSERT INTO tasks (title, description, category, due_date, priority, status, user_id, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?)`;
 
@@ -148,9 +148,14 @@ router.post('/', async (req, res) => {
       now
     ]);
 
-    const selectSql = isPostgres ? 'SELECT * FROM tasks WHERE id = $1' : 'SELECT * FROM tasks WHERE id = ?';
-    const newTask = await runQuery(selectSql, [result.id]);
-    res.status(201).json(newTask[0]);
+    if (isPostgres) {
+      // Postgres runExec returns the row in rows[0] when using RETURNING *
+      res.status(201).json(result.rows[0]); 
+    } else {
+      const selectSql = 'SELECT * FROM tasks WHERE id = ?';
+      const newTask = await runQuery(selectSql, [result.id]);
+      res.status(201).json(newTask[0]);
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -162,7 +167,9 @@ router.put('/:id', async (req, res) => {
     const { title, description, category, status, due_date, priority } = req.body;
     const now = new Date().toISOString();
 
-    const sql = `
+    const isPostgres = !!process.env.DATABASE_URL;
+    const sql = isPostgres
+    ? `
       UPDATE tasks 
       SET title = COALESCE($1, title),
           description = COALESCE($2, description),
@@ -172,6 +179,18 @@ router.put('/:id', async (req, res) => {
           priority = COALESCE($6, priority),
           updated_at = $7
       WHERE id = $8 AND user_id = $9
+      RETURNING *
+    `
+    : `
+      UPDATE tasks 
+      SET title = COALESCE(?, title),
+          description = COALESCE(?, description),
+          category = COALESCE(?, category),
+          status = COALESCE(?, status),
+          due_date = COALESCE(?, due_date),
+          priority = COALESCE(?, priority),
+          updated_at = ?
+      WHERE id = ? AND user_id = ?
     `;
 
     const taskId = parseInt(req.params.id);
@@ -193,8 +212,12 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    const updatedTask = await runQuery('SELECT * FROM tasks WHERE id = $1', [taskId]);
-    res.json(updatedTask[0]);
+    if (isPostgres) {
+      res.json(result.rows[0]);
+    } else {
+      const updatedTask = await runQuery('SELECT * FROM tasks WHERE id = ?', [taskId]);
+      res.json(updatedTask[0]);
+    }
   } catch (error) {
     console.error('Update Task Error:', error.stack);
     res.status(500).json({ error: error.message });
