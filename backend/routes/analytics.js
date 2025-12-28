@@ -45,10 +45,11 @@ router.get('/summary', async (req, res) => {
     res.json({
       status: statusStats,
       category: categoryStats,
+      categories: categoryStats, // Redundant key for compatibility
       trend: trendStats
     });
   } catch (error) {
-    console.error('Analytics Technical Error:', error);
+    console.error('Analytics Technical Error:', error.stack);
     res.status(500).json({ error: error.message });
   }
 });
