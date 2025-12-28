@@ -9,9 +9,13 @@ router.use(authenticateToken);
 router.get('/', async (req, res) => {
   try {
     const { status, category, sort = 'created_at' } = req.query;
+    const { priority, search } = req.query;
+    
+    // Force userId to be an integer (Postgres is strict!)
+    const userId = parseInt(req.user.id);
     
     let sql = 'SELECT * FROM tasks WHERE user_id = $1';
-    const params = [req.user.id];
+    const params = [userId];
     let paramIndex = 2;
 
     // Filter by status
@@ -27,17 +31,17 @@ router.get('/', async (req, res) => {
     }
 
     // Filter by priority
-    const { priority, search } = req.query;
     if (priority) {
       sql += ` AND priority = $${paramIndex++}`;
       params.push(priority);
     }
 
-    // Search filter
+    // Search filter (Using separate params for better compatibility)
     if (search) {
-      sql += ` AND (title LIKE $${paramIndex} OR description LIKE $${paramIndex})`;
-      paramIndex++;
-      params.push(`%${search}%`);
+      const searchPattern = `%${search}%`;
+      sql += ` AND (title ILIKE $${paramIndex} OR description ILIKE $${paramIndex + 1})`;
+      params.push(searchPattern, searchPattern);
+      paramIndex += 2;
     }
 
     // Sorting
@@ -45,12 +49,16 @@ router.get('/', async (req, res) => {
     const sortField = validSortFields.includes(sort) ? sort : 'created_at';
     sql += ` ORDER BY ${sortField} DESC`;
 
-    console.log('Executing SQL:', sql, 'with params:', params);
-    const tasks = await runQuery(sql, params);
-    res.json(tasks);
+    try {
+      const tasks = await runQuery(sql, params);
+      res.json(tasks);
+    } catch (dbError) {
+      console.error('Database Query Error:', dbError);
+      throw dbError; // Caught by the outer catch
+    }
   } catch (error) {
-    console.error('Fetch Tasks Error:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Fetch Tasks Technical Error:', error.stack);
+    res.status(500).json({ error: error.message, detail: 'Check server logs for stack trace' });
   }
 });
 
