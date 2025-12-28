@@ -104,7 +104,9 @@ router.get('/export', async (req, res) => {
 // GET /api/tasks/:id - Get single task
 router.get('/:id', async (req, res) => {
   try {
-    const tasks = await runQuery('SELECT * FROM tasks WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);
+    const taskId = parseInt(req.params.id);
+    const userId = parseInt(req.user.id);
+    const tasks = await runQuery('SELECT * FROM tasks WHERE id = $1 AND user_id = $2', [taskId, userId]);
     
     if (tasks.length === 0) {
       return res.status(404).json({ error: 'Task not found' });
@@ -112,6 +114,7 @@ router.get('/:id', async (req, res) => {
     
     res.json(tasks[0]);
   } catch (error) {
+    console.error('Fetch Single Task Error:', error.stack);
     res.status(500).json({ error: error.message });
   }
 });
@@ -139,7 +142,7 @@ router.post('/', async (req, res) => {
       category || 'Personal',
       due_date || null,
       priority || 'medium',
-      req.user.id,
+      parseInt(req.user.id),
       now,
       now
     ]);
@@ -170,6 +173,9 @@ router.put('/:id', async (req, res) => {
       WHERE id = $8 AND user_id = $9
     `;
 
+    const taskId = parseInt(req.params.id);
+    const userId = parseInt(req.user.id);
+
     const result = await runExec(sql, [
       title || null,
       description || null,
@@ -178,8 +184,8 @@ router.put('/:id', async (req, res) => {
       due_date || null,
       priority || null,
       now,
-      req.params.id,
-      req.user.id
+      taskId,
+      userId
     ]);
 
     if (result.changes === 0) {
@@ -196,8 +202,11 @@ router.put('/:id', async (req, res) => {
 // PATCH /api/tasks/:id/complete - Toggle task completion
 router.patch('/:id/complete', async (req, res) => {
   try {
+    const taskId = parseInt(req.params.id);
+    const userId = parseInt(req.user.id);
+
     // First get current status
-    const tasks = await runQuery('SELECT status FROM tasks WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);
+    const tasks = await runQuery('SELECT status FROM tasks WHERE id = $1 AND user_id = $2', [taskId, userId]);
     
     if (tasks.length === 0) {
       return res.status(404).json({ error: 'Task not found' });
@@ -208,7 +217,7 @@ router.patch('/:id/complete', async (req, res) => {
 
     await runExec(
       'UPDATE tasks SET status = $1, updated_at = $2 WHERE id = $3 AND user_id = $4',
-      [newStatus, now, req.params.id, req.user.id]
+      [newStatus, now, taskId, userId]
     );
 
     const updatedTask = await runQuery('SELECT * FROM tasks WHERE id = $1', [req.params.id]);
@@ -221,7 +230,9 @@ router.patch('/:id/complete', async (req, res) => {
 // DELETE /api/tasks/:id - Delete task
 router.delete('/:id', async (req, res) => {
   try {
-    const result = await runExec('DELETE FROM tasks WHERE id = $1 AND user_id = $2', [req.params.id, req.user.id]);
+    const taskId = parseInt(req.params.id);
+    const userId = parseInt(req.user.id);
+    const result = await runExec('DELETE FROM tasks WHERE id = $1 AND user_id = $2', [taskId, userId]);
 
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Task not found' });
