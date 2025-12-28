@@ -7,59 +7,57 @@ router.use(authenticateToken);
 
 // GET /api/tasks - Get all tasks with optional filters
 router.get('/', async (req, res) => {
-    try {
-      const { status, category, sort = 'created_at', priority, search } = req.query;
-      
-      // Force userId to be an integer (Postgres is strict!)
-      const userId = parseInt(req.user.id);
-      if (isNaN(userId)) throw new Error('Invalid User ID in token');
-      
-      let sql = 'SELECT * FROM tasks WHERE user_id = $1';
-      const params = [userId];
-      let paramIndex = 2;
+  try {
+    const { status, category, sort = 'created_at', priority, search } = req.query;
+    
+    // Force userId to be an integer (Postgres is strict!)
+    const userId = parseInt(req.user.id);
+    if (isNaN(userId)) throw new Error('Invalid User ID in token');
+    
+    let sql = 'SELECT * FROM tasks WHERE user_id = $1';
+    const params = [userId];
+    let paramIndex = 2;
 
-      // Filter by status
-      if (status && status !== 'all') {
-        sql += ` AND status = $${paramIndex++}`;
-        params.push(status);
-      }
-
-      // Filter by category
-      if (category && category !== 'all' && category !== '') {
-        sql += ` AND category = $${paramIndex++}`;
-        params.push(category);
-      }
-
-      // Filter by priority
-      if (priority && priority !== 'all' && priority !== '') {
-        sql += ` AND priority = $${paramIndex++}`;
-        params.push(priority);
-      }
-
-      // Search filter
-      if (search) {
-        const searchPattern = `%${search}%`;
-        sql += ` AND (title ILIKE $${paramIndex} OR description ILIKE $${paramIndex + 1})`;
-        params.push(searchPattern, searchPattern);
-        paramIndex += 2;
-      }
-
-      // Sorting
-      const validSortFields = ['created_at', 'due_date', 'title', 'updated_at'];
-      const sortField = validSortFields.includes(sort) ? sort : 'created_at';
-      sql += ` ORDER BY ${sortField} ASC`; // Changed to ASC for logical list view
-
-      const tasks = await runQuery(sql, params);
-      res.json(tasks);
-    } catch (innerError) {
-      console.error('Fetch Tasks Detail Error:', {
-        userId: req.user.id,
-        query: req.query,
-        stack: innerError.stack
-      });
-      throw innerError;
+    // Filter by status
+    if (status && status !== 'all') {
+      sql += ` AND status = $${paramIndex++}`;
+      params.push(status);
     }
+
+    // Filter by category
+    if (category && category !== 'all' && category !== '') {
+      sql += ` AND category = $${paramIndex++}`;
+      params.push(category);
+    }
+
+    // Filter by priority
+    if (priority && priority !== 'all' && priority !== '') {
+      sql += ` AND priority = $${paramIndex++}`;
+      params.push(priority);
+    }
+
+    // Search filter
+    if (search) {
+      const searchPattern = `%${search}%`;
+      sql += ` AND (title ILIKE $${paramIndex} OR description ILIKE $${paramIndex + 1})`;
+      params.push(searchPattern, searchPattern);
+      paramIndex += 2;
+    }
+
+    // Sorting
+    const validSortFields = ['created_at', 'due_date', 'title', 'updated_at'];
+    const sortField = validSortFields.includes(sort) ? sort : 'created_at';
+    sql += ` ORDER BY ${sortField} ASC`; // Changed to ASC for logical list view
+
+    const tasks = await runQuery(sql, params);
+    res.json(tasks);
   } catch (error) {
+    console.error('Fetch Tasks Detail Error:', {
+      userId: req.user.id,
+      query: req.query,
+      error: error.message,
+      stack: error.stack
+    });
     res.status(500).json({ error: error.message, detail: 'Check server logs for technical details' });
   }
 });
