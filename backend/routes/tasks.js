@@ -45,9 +45,11 @@ router.get('/', async (req, res) => {
     const sortField = validSortFields.includes(sort) ? sort : 'created_at';
     sql += ` ORDER BY ${sortField} DESC`;
 
+    console.log('Executing SQL:', sql, 'with params:', params);
     const tasks = await runQuery(sql, params);
     res.json(tasks);
   } catch (error) {
+    console.error('Fetch Tasks Error:', error);
     res.status(500).json({ error: error.message });
   }
 });
