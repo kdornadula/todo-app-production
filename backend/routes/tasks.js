@@ -192,9 +192,10 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Task not found' });
     }
 
-    const updatedTask = await runQuery('SELECT * FROM tasks WHERE id = $1', [req.params.id]);
+    const updatedTask = await runQuery('SELECT * FROM tasks WHERE id = $1', [taskId]);
     res.json(updatedTask[0]);
   } catch (error) {
+    console.error('Update Task Error:', error.stack);
     res.status(500).json({ error: error.message });
   }
 });
@@ -240,6 +241,7 @@ router.delete('/:id', async (req, res) => {
 
     res.json({ message: 'Task deleted successfully' });
   } catch (error) {
+    console.error('Delete Task Error:', error.stack);
     res.status(500).json({ error: error.message });
   }
 });
