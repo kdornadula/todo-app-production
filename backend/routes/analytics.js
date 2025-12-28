@@ -44,10 +44,11 @@ router.get('/summary', async (req, res) => {
 
     res.json({
       status: statusStats,
-      categories: categoryStats,
+      category: categoryStats,
       trend: trendStats
     });
   } catch (error) {
+    console.error('Analytics Technical Error:', error);
     res.status(500).json({ error: error.message });
   }
 });
