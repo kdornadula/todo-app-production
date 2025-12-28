@@ -11,12 +11,19 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 // Middleware
+const VERCEL_URL = 'https://todo-app-production-six.vercel.app';
 app.use(cors({
-  origin: '*', // Allow all origins for production trial
+  origin: [VERCEL_URL, 'http://localhost:5173'], // Explicit origins for token safety
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
+
+// Request Logger (For mobile debugging)
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - User-Agent: ${req.headers['user-agent']}`);
+  next();
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
