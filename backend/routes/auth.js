@@ -23,6 +23,7 @@ router.post('/register',
     }
 
     try {
+      const { email, password, name } = req.body;
       const normalizedEmail = email.toLowerCase();
 
       // Check if user already exists
