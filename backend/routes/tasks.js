@@ -31,7 +31,7 @@ router.get('/', async (req, res) => {
     }
 
     // Filter by priority
-    if (priority) {
+    if (priority && priority !== 'all') {
       sql += ` AND priority = $${paramIndex++}`;
       params.push(priority);
     }
