@@ -66,7 +66,8 @@ router.get('/', async (req, res) => {
 router.get('/export', async (req, res) => {
   try {
     const { format = 'json' } = req.query;
-    const tasks = await runQuery('SELECT * FROM tasks WHERE user_id = $1 ORDER BY created_at DESC', [req.user.id]);
+    const userId = parseInt(req.user.id);
+    const tasks = await runQuery('SELECT * FROM tasks WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
 
     if (format === 'csv') {
       // Generate CSV
@@ -221,9 +222,10 @@ router.patch('/:id/complete', async (req, res) => {
       [newStatus, now, taskId, userId]
     );
 
-    const updatedTask = await runQuery('SELECT * FROM tasks WHERE id = $1', [req.params.id]);
+    const updatedTask = await runQuery('SELECT * FROM tasks WHERE id = $1', [taskId]);
     res.json(updatedTask[0]);
   } catch (error) {
+    console.error('Complete Task Technical Error:', error.stack);
     res.status(500).json({ error: error.message });
   }
 });
