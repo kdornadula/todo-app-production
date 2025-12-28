@@ -10,7 +10,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+// Middleware
+app.use(cors({
+  origin: '*', // Allow all origins for production trial
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Routes
@@ -34,8 +39,19 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  console.error('--- GLOBAL ERROR ---');
+  console.error('Path:', req.path);
+  console.error('Method:', req.method);
+  console.error('Query:', req.query);
+  console.error('Headers:', req.headers);
+  console.error('Stack:', err.stack);
+  console.error('---------------------');
+  
+  res.status(500).json({ 
+    error: 'Internal Server Error',
+    message: err.message,
+    path: req.path
+  });
 });
 
 // Start server
