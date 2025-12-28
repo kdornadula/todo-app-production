@@ -42,10 +42,11 @@ router.post('/register',
         : 'INSERT INTO users (email, password_hash, name, created_at) VALUES (?, ?, ?, ?)';
       
       const result = await runExec(sql, [email, passwordHash, name || null, now]);
+      const userId = parseInt(result.id);
 
       // Generate JWT
       const token = jwt.sign(
-        { id: result.id, email },
+        { id: userId, email },
         JWT_SECRET,
         { expiresIn: JWT_EXPIRES_IN }
       );
@@ -53,15 +54,15 @@ router.post('/register',
       // Return user (without password) and token
       res.status(201).json({
         user: {
-          id: result.id,
+          id: userId,
           email,
           name: name || null
         },
         token
       });
     } catch (error) {
-      console.error('Registration error:', error);
-      res.status(500).json({ error: 'Registration failed' });
+      console.error('Registration Technical Error:', error.stack);
+      res.status(500).json({ error: error.message });
     }
   }
 );
@@ -88,6 +89,7 @@ router.post('/login',
       }
 
       const user = users[0];
+      const userId = parseInt(user.id);
 
       // Verify password
       const isValidPassword = await bcrypt.compare(password, user.password_hash);
@@ -97,7 +99,7 @@ router.post('/login',
 
       // Generate JWT
       const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: userId, email: user.email },
         JWT_SECRET,
         { expiresIn: JWT_EXPIRES_IN }
       );
@@ -105,15 +107,15 @@ router.post('/login',
       // Return user (without password) and token
       res.json({
         user: {
-          id: user.id,
+          id: userId,
           email: user.email,
           name: user.name
         },
         token
       });
     } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ error: 'Login failed' });
+      console.error('Login Technical Error:', error.stack);
+      res.status(500).json({ error: error.message });
     }
   }
 );
