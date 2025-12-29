@@ -130,7 +130,7 @@ export default function Dashboard() {
                   tickLine={false} 
                   tickFormatter={(str) => {
                     const date = new Date(str);
-                    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
                   }}
                 />
                 <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
