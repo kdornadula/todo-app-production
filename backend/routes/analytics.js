@@ -42,6 +42,11 @@ router.get('/summary', async (req, res) => {
 
     const trendStats = await runQuery(trendSql, [userId]);
 
+    // Parse counts to integers (Postgres returns strings for COUNT)
+    statusStats.forEach(row => row.count = parseInt(row.count));
+    categoryStats.forEach(row => row.count = parseInt(row.count));
+    trendStats.forEach(row => row.count = parseInt(row.count));
+
     res.json({
       status: statusStats,
       category: categoryStats,
