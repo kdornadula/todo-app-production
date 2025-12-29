@@ -23,8 +23,13 @@ router.post('/register',
     }
 
     try {
-      const { email, password, name } = req.body;
+      const { email, password, name, inviteCode } = req.body;
       const normalizedEmail = email.toLowerCase();
+
+      // Validate Invitation Code (Security Check)
+      if (process.env.INVITE_CODE && inviteCode !== process.env.INVITE_CODE) {
+        return res.status(403).json({ error: 'Invalid invitation code' });
+      }
 
       // Check if user already exists
       const existingUsers = await runQuery('SELECT id FROM users WHERE email = $1', [normalizedEmail]);

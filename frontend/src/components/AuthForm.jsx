@@ -6,7 +6,8 @@ export default function AuthForm() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    name: ''
+    name: '',
+    inviteCode: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +20,7 @@ export default function AuthForm() {
 
     const result = isLogin
       ? await login(formData.email, formData.password)
-      : await signup(formData.email, formData.password, formData.name);
+      : await signup(formData.email, formData.password, formData.name, formData.inviteCode);
 
     if (!result.success) {
       setError(result.error);

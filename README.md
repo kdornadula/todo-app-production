@@ -71,6 +71,7 @@ npm install
 # Create .env file
 echo "JWT_SECRET=your_secret_key" > .env
 echo "JWT_EXPIRES_IN=7d" >> .env
+echo "INVITE_CODE=your_secret_code" >> .env # Optional: Restricts signup
 # Optional: DATABASE_URL for Postgres, otherwise defaults to SQLite
 
 npm run dev

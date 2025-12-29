@@ -29,12 +29,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (email, password, name) => {
+  const signup = async (email, password, name, inviteCode) => {
     try {
       const response = await api.post('/auth/register', {
         email,
         password,
-        name
+        name,
+        inviteCode
       });
       
       const { user: userData, token: authToken } = response.data;
