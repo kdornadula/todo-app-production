@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth, AuthProvider } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { useTasks } from './hooks/useTasks';
@@ -9,6 +10,7 @@ import FilterBar from './components/FilterBar';
 import AuthForm from './components/AuthForm';
 import ShortcutsHelp from './components/ShortcutsHelp';
 import Dashboard from './components/Dashboard';
+import AdminDashboard from './components/AdminDashboard';
 
 function MainApp() {
   const { user, logout } = useAuth();
@@ -204,31 +206,36 @@ function MainApp() {
   );
 }
 
-function App() {
-  return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </ThemeProvider>
-  );
-}
-
 function AppContent() {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+     return (
+       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+         <div className="text-center">
+           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+           <p className="text-gray-600">Loading...</p>
+         </div>
+       </div>
+     );
+   }
 
   return isAuthenticated ? <MainApp /> : <AuthForm />;
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/" element={<AppContent />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
+  );
 }
 
 export default App;

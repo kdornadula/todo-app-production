@@ -128,6 +128,23 @@ export default function AuthForm() {
             />
           </div>
 
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Invitation Code
+              </label>
+              <input
+                type="text"
+                name="inviteCode"
+                value={formData.inviteCode}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Required for registration"
+                required
+              />
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}

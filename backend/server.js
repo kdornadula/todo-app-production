@@ -4,6 +4,7 @@ import cors from 'cors';
 import taskRoutes from './routes/tasks.js';
 import authRoutes from './routes/auth.js';
 import analyticsRoutes from './routes/analytics.js';
+import adminRoutes from './routes/admin.js';
 import './database.js'; // Initialize database
 
 const app = express();
@@ -14,7 +15,7 @@ app.use(cors({
   origin: true, 
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-key']
 }));
 app.use(express.json());
 
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check and root endpoints
 app.get('/api', (req, res) => {
