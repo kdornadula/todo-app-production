@@ -124,7 +124,15 @@ export default function Dashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} />
+                <XAxis 
+                  dataKey="date" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tickFormatter={(str) => {
+                    const date = new Date(str);
+                    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                  }}
+                />
                 <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip />
                 <Area 
